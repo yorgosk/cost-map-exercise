@@ -20,11 +20,10 @@ catkin_package(
 
 include_directories(
   include
-  include/simple_layers
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library(grid_layer src/simple_layers/grid_layer.cpp)
+add_library(grid_layer src/grid_layer.cpp)
 
 add_dependencies(grid_layer grid_map_msgs_gencpp ${${PROJECT_NAME}_EXPORTED_TARGETS})
 

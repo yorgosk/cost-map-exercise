@@ -1,4 +1,4 @@
-#include <../../include/simple_layers/grid_layer.h>
+#include <../include/simple_layers/grid_layer.h>
 #include <pluginlib/class_list_macros.h>
 
 PLUGINLIB_EXPORT_CLASS(grid_layer::GridLayer, costmap_2d::Layer)
