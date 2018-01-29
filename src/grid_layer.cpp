@@ -1,14 +1,14 @@
-#include <../include/simple_layers/grid_layer.h>
+#include <../include/simple_layers/grid_layer.hpp>
 #include <pluginlib/class_list_macros.h>
 
-PLUGINLIB_EXPORT_CLASS(grid_layer::GridLayer, costmap_2d::Layer)
+PLUGINLIB_EXPORT_CLASS(cost_map_exercise::GridLayer, costmap_2d::Layer)
 
 using costmap_2d::FREE_SPACE;
 using costmap_2d::LETHAL_OBSTACLE;
 using costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
 using costmap_2d::NO_INFORMATION;
 
-namespace grid_layer {
+namespace cost_map_exercise {
 
   void GridLayer::onInitialize() {
     ROS_INFO("initializing nodeHandle\n");

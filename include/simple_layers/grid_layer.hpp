@@ -18,9 +18,10 @@
 // NaN detection and absolute values
 #include <math.h>
 
-namespace grid_layer {
+namespace cost_map_exercise {
 
   class GridLayer : public costmap_2d::Layer, public costmap_2d::Costmap2D {
+  protected:
     /* class private variable-members */
     ros::NodeHandle nodeHandle_;
     ros::Subscriber subscriber_;
