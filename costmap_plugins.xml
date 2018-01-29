@@ -1,5 +1,5 @@
-<library path="lib/libcost_map_exercise">
-  <class type="cost_map_exercise::GridLayer" base_class_type="costmap_2d::Layer">
+<library path="lib/libgrid_layer">
+  <class type="grid_layer::GridLayer" base_class_type="costmap_2d::Layer">
     <description>Cost map grid layer created using traversability estimation data.</description>
   </class>
 </library>

@@ -1,17 +1,17 @@
-#include <../include/simple_layers/grid_layer.hpp>
+#include <../include/simple_layer/grid_layer.hpp>
 #include <pluginlib/class_list_macros.h>
 
-PLUGINLIB_EXPORT_CLASS(cost_map_exercise::GridLayer, costmap_2d::Layer)
+PLUGINLIB_EXPORT_CLASS(grid_layer::GridLayer, costmap_2d::Layer)
 
 using costmap_2d::FREE_SPACE;
 using costmap_2d::LETHAL_OBSTACLE;
 using costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
 using costmap_2d::NO_INFORMATION;
 
-namespace cost_map_exercise {
+namespace grid_layer {
 
   void GridLayer::onInitialize() {
-    ROS_INFO("initializing nodeHandle\n");
+    // ROS_INFO("initializing nodeHandle\n");
     nodeHandle_ = ros::NodeHandle("~/" + name_);
     current_ = true;
     default_value_ = NO_INFORMATION;
@@ -20,16 +20,16 @@ namespace cost_map_exercise {
     // dsrv_ = new dynamic_reconfigure::Server<costmap_2d::GenericPluginConfig>(nodeHandle_);
     // dynamic_reconfigure::Server<costmap_2d::GenericPluginConfig>::CallbackType cb = boost::bind(&GridLayer::reconfigureCB, this, _1, _2);
     // dsrv_->setCallback(cb);
-    ROS_INFO("A\n");
+    // ROS_INFO("A\n");
 
     subscriber_ = nodeHandle_.subscribe("/traversability_estimation/traversability_map", 10, &GridLayer::topicCallback, this);
-    ROS_INFO("B\n");
+    // ROS_INFO("B\n");
   }
 
   void GridLayer::topicCallback(const grid_map_msgs::GridMap& map_msg) {
-    ROS_INFO("Here I am!!!\n");
+    // ROS_INFO("Here I am!!!\n");
     grid_map::GridMapRosConverter::fromMessage(map_msg, map_);
-    ROS_INFO("I am done!\n");
+    // ROS_INFO("I am done!\n");
   }
 
   void GridLayer::matchSize() {

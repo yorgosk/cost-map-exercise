@@ -25,14 +25,16 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library(cost_map_exercise src/grid_layer.cpp include/simple_layers/grid_layer.hpp)
+add_library(grid_layer src/simple_layer/grid_layer.cpp)
 
-add_dependencies(cost_map_exercise grid_map_msgs_gencpp ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(grid_layer grid_map_msgs_gencpp ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+target_link_libraries(grid_layer ${catkin_LIBRARIES})
 
 install(FILES costmap_plugins.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
-install(TARGETS cost_map_exercise
+install(TARGETS grid_layer
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )

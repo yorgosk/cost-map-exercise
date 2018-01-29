@@ -18,7 +18,7 @@
 // NaN detection and absolute values
 #include <math.h>
 
-namespace cost_map_exercise {
+namespace grid_layer {
 
   class GridLayer : public costmap_2d::Layer, public costmap_2d::Costmap2D {
   protected:
