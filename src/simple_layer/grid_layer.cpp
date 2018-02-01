@@ -54,6 +54,7 @@ namespace grid_layer {
   /* My modified update bounds */
   void GridLayer::updateBounds(double robot_x, double robot_y, double robot_yaw, double* min_x, double* min_y, double* max_x, double* max_y) {
     if (!enabled_) return;
+    ROS_INFO("LETHAL_OBSTACLE = %d, FREE_SPACE = %d, INSCRIBED_INFLATED_OBSTACLE = %d, NO_INFORMATION = %d\n", LETHAL_OBSTACLE, FREE_SPACE, INSCRIBED_INFLATED_OBSTACLE, NO_INFORMATION);
 
     /* get traversability map's "traversability" and "uncertainty" layers */
     grid_map::Matrix& trav_data = map_["traversability"];
@@ -69,7 +70,7 @@ namespace grid_layer {
     /* the world coordinates for which we will determine a cost */
     double mark_x, mark_y;
     /* cost variable */
-    unsigned char cost;
+    int cost;
     /* ratios to help as with conversion -- xRatio = (Math.abs(srcMax-srcMin))/(Math.abs(destMax-destMin)); */
     double trav_max_x = trav_map_met_x, trav_min_x = 0, trav_max_y = trav_map_met_y, trav_min_y = 0,
            cost_max_x = cost_map_met_x, cost_min_x = 0, cost_max_y = cost_map_met_y, cost_min_y = 0,
@@ -84,22 +85,26 @@ namespace grid_layer {
         /* if it is not NaN, determine cost */
         if (!std::isnan(trav_data(i))) {
           /* apply our heuristic rule */
-          if (trav_data(i) <= -4 && uncert_data(i) <= 0.4) {       // traversability: [-5, -4] (and uncertainty range: [0, 0.4] ) --> FREE_SPACE
-            cost = FREE_SPACE;
+          if (trav_data(i) <= -2.1 /*&& uncert_data(i) >= 1*/) {  // traversability: (-3.5, -2.1]  (and uncertainty range: [1.0, +inf)  ) --> LETHAL_OBSTACLE
+            cost = LETHAL_OBSTACLE;
           }
-          else if (trav_data(i) < -3.5 && uncert_data(i) < 1.0) {  // traversability: (-4, -3.5] (and uncertainty range: (0.4, 1.0) ) --> INSCRIBED_INFLATED_OBSTACLE
+          else if (trav_data(i) <= -3.5 /*&& uncert_data(i) < 1.0*/) {  // traversability: (-4, -3.5] (and uncertainty range: (0.4, 1.0) ) --> INSCRIBED_INFLATED_OBSTACLE
             cost = INSCRIBED_INFLATED_OBSTACLE;
           }
-          else if (trav_data(i) <= -2.1 && uncert_data(i) >= 1) {  // traversability: (-3.5, -2.1]  (and uncertainty range: [1.0, +inf)  ) --> LETHAL_OBSTACLE
-            cost = LETHAL_OBSTACLE;
+          else if (trav_data(i) <= -4 /*&& uncert_data(i) <= 0.4*/) {       // traversability: [-5, -4] (and uncertainty range: [0, 0.4] ) --> FREE_SPACE
+            cost = FREE_SPACE;
           }
           else {                                                   // traversability: anything else (and uncertainty range: anything else ) --> NO_INFORMATION
             cost = NO_INFORMATION;
           }
+
+          ROS_INFO("%d,\n", cost);
         }
         /* if it is Nan, consider it as NO_INFORMATION */
         else {
           cost = NO_INFORMATION;
+
+          ROS_INFO("NaN,\n");
         }
 
         /* position from traversability map's world to costmap's world */
@@ -115,11 +120,13 @@ namespace grid_layer {
         }
 
         /* in the end we will have our desired bounds */
-        *min_x = std::min(*min_x, mark_x);
-        *min_y = std::min(*min_y, mark_y);
-        *max_x = std::max(*max_x, mark_x);
-        *max_y = std::max(*max_y, mark_y);
+        *min_x = std::min(*min_x, -100.0);
+        *min_y = std::min(*min_y, -100.0);
+        *max_x = std::max(*max_x, 100.0);
+        *max_y = std::max(*max_y, 100.0);
     }
+
+    ROS_INFO("\n");
   }
 
   void GridLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j) {
