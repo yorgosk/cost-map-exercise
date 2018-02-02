@@ -32,6 +32,7 @@ namespace grid_layer {
     /* reconfigure cost map */
     // void reconfigureCB(costmap_2d::GenericPluginConfig &config, uint32_t level) { enabled_ = config.enabled; }
     // dynamic_reconfigure::Server<costmap_2d::GenericPluginConfig> *dsrv_;
+    bool new_map_;
 
   public:
     GridLayer() { layered_costmap_ = NULL; };
