@@ -29,9 +29,6 @@ namespace grid_layer {
     grid_map::GridMap map_;
     /* callback function */
     virtual void topicCallback(const grid_map_msgs::GridMap& map_msg);
-    /* reconfigure cost map */
-    // void reconfigureCB(costmap_2d::GenericPluginConfig &config, uint32_t level) { enabled_ = config.enabled; }
-    // dynamic_reconfigure::Server<costmap_2d::GenericPluginConfig> *dsrv_;
     bool new_map_;
 
   public:
