@@ -13,7 +13,7 @@ namespace grid_layer {
   void GridLayer::onInitialize() {
     nodeHandle_ = ros::NodeHandle("~/" + name_);
     current_ = true;
-    default_value_ = FREE_SPACE;
+    default_value_ = NO_INFORMATION;
     matchSize();
 
     new_map_ = false;
@@ -37,10 +37,10 @@ namespace grid_layer {
     use polar coordinates and make a transformation based on geometric rules
 
     Previous idea:
-    traversability: [-5, -4] (and uncertainty range: [0, 0.4] ) --> FREE_SPACE
-    traversability: (-4, -3.5] (and uncertainty range: (0.4, 1.0) ) --> INSCRIBED_INFLATED_OBSTACLE
-    traversability: (-3.5, -2.1]  (and uncertainty range: [1.0, +inf)  ) --> LETHAL_OBSTACLE
-    traversability: anything else (and uncertainty range: anything else ) --> NO_INFORMATION
+    traversability: [-3.5, 0] --> LETHAL_OBSTACLE
+    traversability: [-3.6, 3.5) --> INSCRIBED_INFLATED_OBSTACLE
+    traversability: [-5, -3.6) --> FREE_SPACE
+    traversability: anything else --> NO_INFORMATION
 
     We will also need to convert between two different 2D coordinate systems, like they do here:
     https://gamedev.stackexchange.com/questions/32555/how-do-i-convert-between-two-different-2d-coordinate-systems
@@ -84,6 +84,7 @@ namespace grid_layer {
 
         /* if it is not NaN, determine cost */
         if (!std::isnan(trav_value)) {
+          // /* WRONG!!! */
           // /* position from traversability map's world to costmap's world */
           // int trav_data_x = i / trav_map_cells_x + 1, trav_data_y = i % trav_map_cells_x + 1;
           // double trav_data_world_x = trav_data_x * trav_map_res, trav_data_world_y = trav_data_y * trav_map_res;
@@ -101,16 +102,16 @@ namespace grid_layer {
           /* set cost to map */
           if(worldToMap(mark_x, mark_y, mx, my)) {
             /* apply our heuristic rule */
-            if (trav_value >= -3.5 /*&& uncert_data(i) >= 1*/) {  // traversability: (-3.5, -2.1]  (and uncertainty range: [1.0, +inf)  ) --> LETHAL_OBSTACLE
+            if (trav_value >= -3.5 /*&& uncert_data(i) >= 1*/) {        // traversability: [-3.5, 0] --> LETHAL_OBSTACLE
               cost = LETHAL_OBSTACLE;
             }
-            else if (trav_value >= -3.6 /*&& uncert_data(i) < 1.0*/) {  // traversability: (-4, -3.5] (and uncertainty range: (0.4, 1.0) ) --> INSCRIBED_INFLATED_OBSTACLE
+            else if (trav_value >= -3.6 /*&& uncert_data(i) < 1.0*/) {  // traversability: [-3.6, 3.5] --> INSCRIBED_INFLATED_OBSTACLE
               cost = INSCRIBED_INFLATED_OBSTACLE;
             }
-            else if (trav_value >= -5 /*&& uncert_data(i) <= 0.4*/) {       // traversability: [-5, -4] (and uncertainty range: [0, 0.4] ) --> FREE_SPACE
+            else if (trav_value >= -5 /*&& uncert_data(i) <= 0.4*/) {   // traversability: [-5, -3.6) --> FREE_SPACE
               cost = FREE_SPACE;
             }
-            else {                                                   // traversability: anything else (and uncertainty range: anything else ) --> NO_INFORMATION
+            else {                                                      // traversability: anything else --> NO_INFORMATION
               cost = NO_INFORMATION;
             }
 
@@ -125,6 +126,11 @@ namespace grid_layer {
             *min_y = std::min(*min_y, -100.0);
             *max_x = std::max(*max_x, 100.0);
             *max_y = std::max(*max_y, 100.0);
+
+            // *min_x = std::min(*min_x, mark_x);
+            // *min_y = std::min(*min_y, mark_y);
+            // *max_x = std::max(*max_x, mark_x);
+            // *max_y = std::max(*max_y, mark_y);
           }
         }
       }
