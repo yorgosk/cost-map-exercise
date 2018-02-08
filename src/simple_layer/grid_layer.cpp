@@ -56,7 +56,8 @@ namespace grid_layer {
 
       /* get traversability map's "traversability" and "uncertainty" layers */
       grid_map::Matrix& trav_data = map_["traversability"];
-      grid_map::Matrix& uncert_data = map_["uncertainty_range"];
+      // grid_map::Matrix& uncert_data = map_["uncertainty_range"];
+
       /* the map coordinates for which we will determine a cost */
       unsigned int mx, my;
       /* the world coordinates for which we will determine a cost */
