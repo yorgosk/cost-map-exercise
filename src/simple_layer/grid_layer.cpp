@@ -35,18 +35,12 @@ namespace grid_layer {
   /*
     Main idea:
     use polar coordinates and make a transformation based on geometric rules
+    to convert between two different 2D coordinate systems (traversability map and cost map)
 
-    Previous idea:
-    traversability: [-3.5, 0] --> LETHAL_OBSTACLE
-    traversability: [-3.6, 3.5) --> INSCRIBED_INFLATED_OBSTACLE
-    traversability: [-5, -3.6) --> FREE_SPACE
-    traversability: anything else --> NO_INFORMATION
-
-    We will also need to convert between two different 2D coordinate systems, like they do here:
-    https://gamedev.stackexchange.com/questions/32555/how-do-i-convert-between-two-different-2d-coordinate-systems
-    core idea:
-    xRatio = (Math.abs(srcMax-srcMin))/(Math.abs(destMax-destMin));
-    destX = x*xRatio+destMin;
+    cost map initialized as NO_INFORMATION
+    traversability: [0, 0.5] --> FREE_SPACE
+    traversability: (0.5, 0.6] --> INSCRIBED_INFLATED_OBSTACLE
+    traversability: anything else --> LETHAL_OBSTACLE
   */
 
   /* My modified update bounds */
@@ -56,7 +50,6 @@ namespace grid_layer {
 
       /* get traversability map's "traversability" and "uncertainty" layers */
       grid_map::Matrix& trav_data = map_["traversability"];
-      // grid_map::Matrix& uncert_data = map_["uncertainty_range"];
 
       /* the map coordinates for which we will determine a cost */
       unsigned int mx, my;
@@ -81,19 +74,11 @@ namespace grid_layer {
       for (grid_map::GridMapIterator iterator(map_); !iterator.isPastEnd(); ++iterator) {
         /* get linear index */
         const int i = iterator.getLinearIndex();
-        double trav_value = trav_data(i); // performance improvement
+        double trav_value = trav_data(i);
 
         /* if it is not NaN, determine cost */
         if (!std::isnan(trav_value)) {
-          // /* WRONG!!! */
-          // /* position from traversability map's world to costmap's world */
-          // int trav_data_x = i / trav_map_cells_x + 1, trav_data_y = i % trav_map_cells_x + 1;
-          // double trav_data_world_x = trav_data_x * trav_map_res, trav_data_world_y = trav_data_y * trav_map_res;
-          // /* destX = x*xRatio+destMin; */
-          // mark_x = (trav_data_world_x * x_ratio - cost_min_x) / cost_map_res - 1;
-          // mark_y = (trav_data_world_y * x_ratio - cost_min_y) / cost_map_res - 1;
-
-          /* alternative approach */
+          /* position from traversability map's world to costmap's world */
           double cx = trav_map_res * int(trav_map_cells_x / 2 - i % trav_map_cells_x);
           double cy = trav_map_res * int(trav_map_cells_y / 2 - i / trav_map_cells_y);
           double d = sqrt(pow(cx, 2) + pow(cy, 2));
@@ -102,18 +87,16 @@ namespace grid_layer {
 
           /* set cost to map */
           if(worldToMap(mark_x, mark_y, mx, my)) {
+            // ROS_WARN("%f", trav_value);
             /* apply our heuristic rule */
-            if (trav_value >= -3.5 /*&& uncert_data(i) >= 1*/) {        // traversability: [-3.5, 0] --> LETHAL_OBSTACLE
-              cost = LETHAL_OBSTACLE;
-            }
-            else if (trav_value >= -3.6 /*&& uncert_data(i) < 1.0*/) {  // traversability: [-3.6, 3.5] --> INSCRIBED_INFLATED_OBSTACLE
-              cost = INSCRIBED_INFLATED_OBSTACLE;
-            }
-            else if (trav_value >= -5 /*&& uncert_data(i) <= 0.4*/) {   // traversability: [-5, -3.6) --> FREE_SPACE
+            if (trav_value <= 0.5) {        // traversability: [0, 0.5] --> FREE_SPACE
               cost = FREE_SPACE;
             }
-            else {                                                      // traversability: anything else --> NO_INFORMATION
-              cost = NO_INFORMATION;
+            else if (trav_value <= 0.6) {   // traversability: (0.5, 0.6] --> INSCRIBED_INFLATED_OBSTACLE
+              cost = INSCRIBED_INFLATED_OBSTACLE;
+            }
+            else {                          // traversability: anything else --> LETHAL_OBSTACLE
+              cost = LETHAL_OBSTACLE;
             }
 
             // ROS_INFO("%f\n", cost);
@@ -123,6 +106,7 @@ namespace grid_layer {
             setCost(mx, my, cost);
 
             /* in the end we will have our desired bounds */
+            /* UNOPTIMIZED BUT COMPLETELY FUNCTIONAL */
             *min_x = std::min(*min_x, -100.0);
             *min_y = std::min(*min_y, -100.0);
             *max_x = std::max(*max_x, 100.0);
